@@ -1,0 +1,3 @@
+zadig:
+Tool um verwendeten USB Treiber mit dem WinUSB Treiber zu ersetzen damit 
+dfu-util genutzt werden kann um den STM32 zu flashen

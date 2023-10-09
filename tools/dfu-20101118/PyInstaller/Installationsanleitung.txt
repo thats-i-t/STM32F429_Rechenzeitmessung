@@ -1,0 +1,8 @@
+1) unzip
+2) copy to C:/
+3) run command as administrator
+4) enter in command: python setup.py install
+5) copx upx.exe (from this folder) in the directory from step 2)
+
+Tutorial_PyInstaller: 
+https://bytes.com/topic/python/insights/579554-simple-guide-using-pyinstaller

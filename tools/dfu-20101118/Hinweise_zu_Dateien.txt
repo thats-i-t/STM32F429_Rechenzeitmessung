@@ -1,0 +1,17 @@
+dfu: Python-Quellcode des hex-to-dfu-Tools
+
+dfu: In exe übersetztes Python-dfu-Skript
+
+Zum Erzeugen einer .exe aus dem Python-Quellcode:
+	Python: Python-Installation
+	PyInstaller: Kannn exe aus .py erzeugen
+
+PyInstaller-Installation:
+	Dateistruktur an gewünschten Ort (z.B. C:) kopieren und im Ordner...
+	python setup.py install 
+	...ausführen.
+
+	Alternative mittels pip (gehört zur Python-Installation?):
+	pip install pyinstaller
+
+	Siehe: https://pyinstaller.readthedocs.io/en/stable/installation.html 
