@@ -27,7 +27,7 @@
         "__VFP_FP__",
         "USE_DEVICE_MODE"
       ],
-      "compilerPath": "C:\\USERS\\OLIVE\\APPDATA\\ROAMING\\CODE\\USER\\GLOBALSTORAGE\\BMD.STM32-FOR-VSCODE\\@XPACK-DEV-TOOLS\\ARM-NONE-EABI-GCC\\10.3.1-2.3.1\\.CONTENT\\BIN\\ARM-NONE-EABI-GCC.EXE"
+      "compilerPath": "./tools/gcc-arm-none-eabi-7-2018-q2-update-win32/bin/ARM-NONE-EABI-GCC.EXE"
     }
   ],
   "version": 4

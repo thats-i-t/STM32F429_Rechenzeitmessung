@@ -52,59 +52,71 @@ uint8_t check_header(char *buf){
 	return 0;
 }
 
+#define LEN_TX_FRAME (16+1)*4 
+#define LEN_RX_FRAME (12+1)*4
+#define buflen 200
+char BufArr[buflen];
+char * Buf;
+uint32_t bufend = 0;
 
-void process_received_data(char* Buf, uint32_t Len){
+void process_received_data(char* BufIn, uint32_t Len){
 
-	uint32_t idx = 0;
-	uint8_t header_detected = 0;
-	while(Len - idx >= 9){
-		if(check_header(&Buf[idx])){
-			header_detected = 1;
-			break;
-		}
-		idx++;
+	Buf = BufArr;
+	uint32_t i = 0;
+	for(i = 0; i < Len; i++)
+	{
+		Buf[bufend] = BufIn[i];
+		bufend++;
 	}
-	if(header_detected){
 
-		tFxx IdqRef[2], MrefLim[2], Mref, omEl, p[7], Imax, Uzk, Rs, Ld, Lq, PsiP, Np, reluk, Ureserve;
+	if(bufend >= LEN_RX_FRAME)
+	{
+		uint32_t idx = 0;
 
-		// Read inputs for RefCurrCalc from received data
-		Buf = &Buf[idx + 4];
-		float *pt32 = (float*)Buf;
-		memcpy((char*)&Mref, (char*)&pt32[0], 4);
-		memcpy((char*)&omEl, (char*)&pt32[1], 4);
-		memcpy((char*)&Rs, (char*)&pt32[2], 4);
-		memcpy((char*)&Ld, (char*)&pt32[3], 4);
-		memcpy((char*)&Lq, (char*)&pt32[4], 4);
-		memcpy((char*)&PsiP, (char*)&pt32[5], 4);
-		memcpy((char*)&Np, (char*)&pt32[6], 4);
-		memcpy((char*)&Uzk, (char*)&pt32[7], 4);
-		memcpy((char*)&Imax, (char*)&pt32[8], 4);
-		memcpy((char*)&reluk, (char*)&pt32[9], 4);
-		memcpy((char*)&Ureserve, (char*)&pt32[10], 4);
-        p[0] = (tFxx)Np;
-        p[1] = (tFxx)Rs;
-        p[2] = (tFxx)Ld;
-        p[3] = (tFxx)Lq;
-        p[4] = (tFxx)PsiP;
-        p[5] = (tFxx)Imax;
-        p[6] = (tFxx)Uzk;
+		if(1) // check_header(&Buf[idx])){
+		{	
+			tFxx IdqRef[2], MrefLim[2], Mref, omEl, p[7], Imax, Uzk, Rs, Ld, Lq, PsiP, Np, reluk, Ureserve;
 
-        startTimeMeas(); // log timestamp at start
-		RefCurrentCalculation(IdqRef, MrefLim, Mref, omEl, (const tFxx*)&p); // call function-under-test
-		stopTimeMeas((float*)&timPassedInUs, (float*)&timPassedMaxInUs); // log time directly after end of function
+			// Read inputs for RefCurrCalc from received data
+			Buf = &Buf[idx + 4];
+			float *pt32 = (float*)Buf;
+			memcpy((char*)&Mref, (char*)&pt32[0], 4);
+			memcpy((char*)&omEl, (char*)&pt32[1], 4);
+			memcpy((char*)&Rs, (char*)&pt32[2], 4);
+			memcpy((char*)&Ld, (char*)&pt32[3], 4);
+			memcpy((char*)&Lq, (char*)&pt32[4], 4);
+			memcpy((char*)&PsiP, (char*)&pt32[5], 4);
+			memcpy((char*)&Np, (char*)&pt32[6], 4);
+			memcpy((char*)&Uzk, (char*)&pt32[7], 4);
+			memcpy((char*)&Imax, (char*)&pt32[8], 4);
+			memcpy((char*)&reluk, (char*)&pt32[9], 4);
+			memcpy((char*)&Ureserve, (char*)&pt32[10], 4);
+			p[0] = (tFxx)Np;
+			p[1] = (tFxx)Rs;
+			p[2] = (tFxx)Ld;
+			p[3] = (tFxx)Lq;
+			p[4] = (tFxx)PsiP;
+			p[5] = (tFxx)Imax;
+			p[6] = (tFxx)Uzk;
 
-		float testVar = 123.4;
-		uint8_t TxBuff8[64];
-		uint32_t * TxBuff32;
-		TxBuff32 = (uint32_t*)TxBuff8;
-		memcpy((char*)&TxBuff32[1], (char*)&IdqRef[0], 4);
-		memcpy((char*)&TxBuff32[2], (char*)&IdqRef[1], 4);
-		memcpy((char*)&TxBuff32[3], (char*)&MrefLim, 4);
-		memcpy((char*)&TxBuff32[4], (char*)&pt32[11], 4); // Timestamp is sent back (loopback)
-		memcpy((char*)&TxBuff32[5], (char*)&timPassedInUs, 4);
-		memcpy((char*)&TxBuff32[6], (char*)&testVar, 4);
-		send_data_USB(TxBuff8, 64);
+			startTimeMeas(); // log timestamp at start
+			RefCurrentCalculation(IdqRef, MrefLim, Mref, omEl, (const tFxx*)&p); // call function-under-test
+			stopTimeMeas((float*)&timPassedInUs, (float*)&timPassedMaxInUs); // log time directly after end of function
+
+			float testVar = 123.4;
+			uint8_t TxBuff8[LEN_TX_FRAME];
+			strcpy((char*)TxBuff8, "HEAD");
+			uint32_t * TxBuff32;
+			TxBuff32 = (uint32_t*)TxBuff8;
+			memcpy((char*)&TxBuff32[1], (char*)&IdqRef[0], 4);
+			memcpy((char*)&TxBuff32[2], (char*)&IdqRef[1], 4);
+			memcpy((char*)&TxBuff32[3], (char*)&MrefLim, 4);
+			memcpy((char*)&TxBuff32[4], (char*)&pt32[11], 4); // Timestamp is sent back (loopback)
+			memcpy((char*)&TxBuff32[5], (char*)&timPassedInUs, 4);
+			memcpy((char*)&TxBuff32[6], (char*)&testVar, 4);
+			send_data_USB(TxBuff8, LEN_TX_FRAME);
+		}
+		bufend = 0;
 	}
 }
 
