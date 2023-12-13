@@ -26,13 +26,17 @@ int main(void)
 	SystemInit();
 	
 	// Init peripherals
+	initClocks();
+#ifdef STM32F429_439xx
 	initGPIO();
 	initUserButton();
+#endif
 	initTIM1();
 	UB_USB_CDC_Init();
 	// char rx_buf[APP_TX_BUF_SIZE];
   	// USB_CDC_RXSTATUS_t check = RX_EMPTY;
 
+#ifdef STM32F429_439xx
 	// Init display
 	TM_ILI9341_Init();
 	TM_ILI9341_Rotate(TM_ILI9341_Orientation_Portrait_2);
@@ -60,9 +64,11 @@ int main(void)
 	
 	// Red LED off
 	GPIO_ResetBits(GPIOG, GPIO_Pin_14);
+#endif
 
 	while(1)
 	{		
+#ifdef STM32F429_439xx
 		// User button pressed?
 		if(UsrBtn_Trigger == 1)
 		{
@@ -76,6 +82,7 @@ int main(void)
 		// Lines which shall be printed with disp_var(), disp_fvar(), etc. are only shown when
 		// the function update_display() is called subsequently.
 		update_display();
+#endif
 
 		/* ############################################################################################### */
 		/* This was used for initially testing the time measurement */

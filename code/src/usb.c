@@ -59,6 +59,11 @@ char BufArr[buflen];
 char * Buf;
 uint32_t bufend = 0;
 
+
+typedef float tFxx;
+void calc_opt_op_cur(tFxx *i_0,tFxx m_ref,tFxx n,tFxx *Rs, tFxx *Ls, tFxx *Psi,tFxx Usmax,tFxx Ismax,tFxx n_nom,tFxx np,tFxx ibatmax,tFxx ibatmin,tFxx uzk,tFxx n_max,tFxx *output);
+
+
 void process_received_data(char* BufIn, uint32_t Len){
 
 	Buf = BufArr;
@@ -99,8 +104,43 @@ void process_received_data(char* BufIn, uint32_t Len){
 			p[5] = (tFxx)Imax;
 			p[6] = (tFxx)Uzk;
 
-			startTimeMeas(); // log timestamp at start
-			RefCurrentCalculation(IdqRef, MrefLim, Mref, omEl, (const tFxx*)&p); // call function-under-test
+			// startTimeMeas(); // log timestamp at start			
+			// RefCurrentCalculation(IdqRef, MrefLim, Mref, omEl, (const tFxx*)&p); // call function-under-test
+			// stopTimeMeas((float*)&timPassedInUs, (float*)&timPassedMaxInUs); // log time directly after end of function
+
+			tFxx i_0[2] = { 0., 0. };
+			tFxx m_ref = 250.f;
+			tFxx n = 10500.f;
+			tFxx Rsx[4] = { 0.057021246441950f, 0.f, 0.057021246441950f, 0.f };
+			tFxx Ls[4] = {1.057812045982978f, 0.f, 0.f , 3.541165744747624f}; 
+			tFxx Psi[2] = {0.596176046255743f, -6.284096542285975e-05f};
+			tFxx Usmax = 350.f;
+			tFxx Ismax = 520.f;
+			tFxx n_nom = 1335.f;
+			tFxx np = 4.f;
+			tFxx ibatmax = 360.f;
+			tFxx ibatmin = -350.f;
+			tFxx uzk = 650.f;
+			tFxx n_max = 18250.f;
+			tFxx output[3];
+			
+			startTimeMeas(); // log timestamp at start				
+			calc_opt_op_cur(  i_0, // call function-under-test
+							m_ref,
+							n,
+							Rsx, 
+							Ls, 
+							Psi,
+							Usmax,
+							Ismax,
+							n_nom,
+							np,
+							ibatmax,
+							ibatmin,
+							uzk,
+							n_max,
+							output
+						);
 			stopTimeMeas((float*)&timPassedInUs, (float*)&timPassedMaxInUs); // log time directly after end of function
 
 			float testVar = 123.4;

@@ -14,6 +14,8 @@
 // #define GPIO_PORT_USB_ID		GPIOA
 // #define GPIO_PIN_USB_ID			GPIO_Pin_10
 
+#ifdef STM32F429_439xx
+
 #define GPIO_PORT_USB_DP		GPIOB
 #define GPIO_PIN_USB_DP			GPIO_Pin_15
 #define GPIO_AFPIN_USB_DP		GPIO_PinSource15
@@ -22,14 +24,24 @@
 #define GPIO_PIN_USB_DM			GPIO_Pin_14
 #define GPIO_AFPIN_USB_DM		GPIO_PinSource14
 
+#elif (defined STM32F407)
+
+#define GPIO_PORT_USB_DP		GPIOA
+#define GPIO_PIN_USB_DP			GPIO_Pin_11
+#define GPIO_AFPIN_USB_DP		GPIO_PinSource11
+
+#define GPIO_PORT_USB_DM		GPIOA
+#define GPIO_PIN_USB_DM			GPIO_Pin_12
+#define GPIO_AFPIN_USB_DM		GPIO_PinSource12
+
+#endif
 
 volatile uint8_t UsrBtn_Trigger = 0;
 volatile uint32_t timStart;
 volatile float timPassedMaxInUsGlobal = 0.f;
 
-
-void initGPIO()
-{
+void initClocks()
+{	
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
@@ -37,7 +49,10 @@ void initGPIO()
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE, ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOF, ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOG, ENABLE);
+}
 
+void initGPIO()
+{
 	GPIO_InitTypeDef GPIO_InitStruct;
 	GPIO_StructInit(&GPIO_InitStruct);
 	GPIO_InitStruct.GPIO_Pin=GPIO_Pin_2 | GPIO_Pin_6;
