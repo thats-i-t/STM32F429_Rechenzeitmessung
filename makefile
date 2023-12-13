@@ -23,7 +23,8 @@ OBJ_DIR = $(OUTPUT_DIR)/obj
 # TOOLS
 ################################################################################
 TOOL_DIR = $(BASE_DIR)/tools
-COMPILERPATH = $(TOOL_DIR)/gcc-arm-none-eabi-7-2018-q2-update-win32\bin
+# COMPILERPATH = $(TOOL_DIR)/gcc-arm-none-eabi-7-2018-q2-update-win32\bin
+COMPILERPATH = $(TOOL_DIR)/gcc-arm-none-eabi-10.3-2021.10/bin
 ST-FLASH-PATH = $(TOOL_DIR)/stlink-1.3.0-win64/bin
 BIN_2_DFU = $(TOOL_DIR)/dfu-20101118/dfu
 DFU_UTIL_PATH = $(TOOL_DIR)/dfu-util-0.9-win64

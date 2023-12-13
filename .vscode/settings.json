@@ -1,4 +1,8 @@
 {
+    "cortex-debug.gdbPath": "./tools/gcc-arm-none-eabi-10.3-2021.10/bin/arm-none-eabi-gdb.exe",
+    "cortex-debug.armToolchainPath": "./tools/gcc-arm-none-eabi-10.3-2021.10/bin/",
+    "cortex-debug.armToolchainPrefix": "arm-none-eabi",
+    "makefile.makePath": "./tools/2.12-20190422-1053/bin",
     "files.exclude": {
         ".settings": true,
         ".git": true,
@@ -10,10 +14,6 @@
         "output": true,
         "project/ASM": true
     },
-    "cortex-debug.JLinkGDBServerPath": "/opt/SEGGER/JLink/JLinkGDBServerCLExe",
-    "stm32-for-vscode.makePath": "C:\\USERS\\OLIVE\\APPDATA\\ROAMING\\CODE\\USER\\GLOBALSTORAGE\\BMD.STM32-FOR-VSCODE\\@XPACK-DEV-TOOLS\\WINDOWS-BUILD-TOOLS\\4.3.0-1.1\\.CONTENT\\BIN\\MAKE.EXE",
-    "cortex-debug.armToolchainPath": "c:\\Users\\olive\\AppData\\Roaming\\Code\\User\\globalStorage\\bmd.stm32-for-vscode\\@xpack-dev-tools\\arm-none-eabi-gcc\\10.3.1-2.3.1\\.content\\bin",
-    "cortex-debug.openocdPath": "C:\\USERS\\OLIVE\\APPDATA\\ROAMING\\CODE\\USER\\GLOBALSTORAGE\\BMD.STM32-FOR-VSCODE\\@XPACK-DEV-TOOLS\\OPENOCD\\0.11.0-4.1\\.CONTENT\\BIN\\OPENOCD.EXE",
     "files.associations": {
         "usb_core.h": "c",
         "usb_conf.h": "c",
@@ -63,6 +63,5 @@
         "usbd_def.h": "c",
         "basic_functions.h": "c",
         "usbd_cdc_vcp.h": "c"
-    },
-    "makefile.makePath": "D:\\Privat\\Projekte\\MotorControl\\_Build_Tools\\GNU_MCU_Eclipse\\Build_Tools\\2.12-20190422-1053\\bin"
+    }
 }

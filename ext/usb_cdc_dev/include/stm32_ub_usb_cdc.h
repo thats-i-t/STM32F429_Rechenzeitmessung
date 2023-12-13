@@ -22,7 +22,7 @@ typedef enum {
   USB_CDC_DETACHED,   // USB-Verbindung getrennt
   USB_CDC_CONNECTED   // USB-Verbindung hergestellt
 }USB_CDC_STATUS_t;
-USB_CDC_STATUS_t USB_CDC_STATUS;
+extern USB_CDC_STATUS_t USB_CDC_STATUS;
 
 //--------------------------------------------------------------
 // Endekennung beim Senden
