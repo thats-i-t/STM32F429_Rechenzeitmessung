@@ -62,6 +62,9 @@
         "stm32_ub_usb_cdc.h": "c",
         "usbd_def.h": "c",
         "basic_functions.h": "c",
-        "usbd_cdc_vcp.h": "c"
+        "usbd_cdc_vcp.h": "c",
+        "stdlib.h": "c",
+        "usb_user.h": "c",
+        "stm32f4xx_gpio.h": "c"
     }
 }

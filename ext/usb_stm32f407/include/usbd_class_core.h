@@ -16,7 +16,7 @@
 #define USB_CLASS_BUSY         1
 #define USB_CLASS_ZLP          2
 
-uint8_t  USB_Tx_State;
+extern uint8_t  USB_Tx_State;
 
 uint8_t  usbd_class_Init        (void  *pdev, uint8_t cfgidx);
 uint8_t  usbd_class_DeInit      (void  *pdev, uint8_t cfgidx);

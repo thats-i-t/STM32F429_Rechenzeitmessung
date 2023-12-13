@@ -16,10 +16,14 @@
 #include "periph_functions.h"
 #include "diagnostics.h"
 #include "usb.h"
+
+#ifdef STM32F429_439xx
 #include "usb_defines.h"
 #include "usbd_desc.h"
 #include "stm32_ub_usb_cdc.h"
-
+#elif (defined STM32F40_41xxx)
+#include "usb_user.h"
+#endif
 
 int main(void)
 {
@@ -32,9 +36,14 @@ int main(void)
 	initUserButton();
 #endif
 	initTIM1();
-	UB_USB_CDC_Init();
-	char rx_buf[APP_TX_BUF_SIZE];
-  	USB_CDC_RXSTATUS_t check = RX_EMPTY;
+	
+#ifdef STM32F429_439xx
+	// UB_USB_CDC_Init();
+	// char rx_buf[APP_TX_BUF_SIZE];
+  	// USB_CDC_RXSTATUS_t check = RX_EMPTY;
+#elif (defined STM32F40_41xxx)
+	init_usb();
+#endif
 
 #ifdef STM32F429_439xx
 	// Init display
@@ -117,14 +126,16 @@ int main(void)
 		/* ############################################################################################### */
 		// USB communication (this loopback was only used for testing)
 		/* ############################################################################################### */
-		if(UB_USB_CDC_GetStatus() == USB_CDC_CONNECTED)
-		{
-			check = UB_USB_CDC_ReceiveString(rx_buf);
-			if(check == RX_READY)
-			{
-				UB_USB_CDC_SendString(rx_buf,LFCR);
-			}
-		}
+#ifdef STM32F429_439xx
+		// if(UB_USB_CDC_GetStatus() == USB_CDC_CONNECTED)
+		// {
+		// 	check = UB_USB_CDC_ReceiveString(rx_buf);
+		// 	if(check == RX_READY)
+		// 	{
+		// 		UB_USB_CDC_SendString(rx_buf,LFCR);
+		// 	}
+		// }
+#endif
 		/* ############################################################################################### */
 	}
 }

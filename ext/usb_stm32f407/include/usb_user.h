@@ -2,10 +2,10 @@
 #define __USB_H__
 
 #include "usbd_conf.h"
-#include "communication.h"
-#include "tasks.h"
-#include "gpio.h"
-#include "typedef.h"
+// #include "communication.h"
+// #include "tasks.h"
+// #include "gpio.h"
+// #include "typedef.h"
 
 /*
 *************************************************************************************************
@@ -13,7 +13,7 @@
 *************************************************************************************************
 */
 
-#define USB_BUFF_SIZE_IN_BYTES TX_BYTES_PER_MSG
+#define USB_BUFF_SIZE_IN_BYTES 64 //TX_BYTES_PER_MSG
 
 
 #if USB_BUFF_SIZE_IN_BYTES > APP_RX_DATA_SIZE
@@ -36,7 +36,7 @@ extern int16_t usbDevAddress;
 
 void init_usb(void);
 void reinit_usb(void);
-bool try_send_data_USB(tUI8 * txBuff_aui8, uint16_t numBytesData);
-
+uint8_t send_data_USB(uint8_t * txBuff_aui8, uint16_t numBytesData);
+void init_GPIO_USB();
 
 #endif /* __USB_H__ */

@@ -21,7 +21,7 @@ extern uint32_t USBD_OTG_EP1OUT_ISR_Handler (USB_OTG_CORE_HANDLE *pdev);
 // #define GPIO_PORT_USB_ID		GPIOA
 // #define GPIO_PIN_USB_ID			GPIO_Pin_10
 
-#ifdef STM32F429_439xx
+// #ifdef STM32F429_439xx
 
 #define GPIO_PORT_USB_DP		GPIOB
 #define GPIO_PIN_USB_DP			GPIO_Pin_15
@@ -38,24 +38,24 @@ extern uint32_t USBD_OTG_EP1OUT_ISR_Handler (USB_OTG_CORE_HANDLE *pdev);
 #define GPIO_PIN_USB_OTG_FS_ID			GPIO_Pin_12
 #define GPIO_AFPIN_USB_OTG_FS_ID		GPIO_PinSource12
 
-#elif (defined STM32F40_41xxx) // for STM32F407
+// #elif (defined STM32F40_41xxx) // for STM32F407
 
-#define GPIO_PORT_USB_DP		GPIOA
-#define GPIO_PIN_USB_DP			GPIO_Pin_12
-#define GPIO_AFPIN_USB_DP		GPIO_PinSource12
+// #define GPIO_PORT_USB_DP		GPIOA
+// #define GPIO_PIN_USB_DP			GPIO_Pin_12
+// #define GPIO_AFPIN_USB_DP		GPIO_PinSource12
 
-#define GPIO_PORT_USB_DM		GPIOA
-#define GPIO_PIN_USB_DM			GPIO_Pin_11
-#define GPIO_AFPIN_USB_DM		GPIO_PinSource11
+// #define GPIO_PORT_USB_DM		GPIOA
+// #define GPIO_PIN_USB_DM			GPIO_Pin_11
+// #define GPIO_AFPIN_USB_DM		GPIO_PinSource11
 
-#define GPIO_PORT_USB_VBUS_FS		GPIOA
-#define GPIO_PIN_USB_VBUS_FS			GPIO_Pin_9
+// #define GPIO_PORT_USB_VBUS_FS		GPIOA
+// #define GPIO_PIN_USB_VBUS_FS			GPIO_Pin_9
 
-#define GPIO_PORT_USB_OTG_FS_ID		GPIOA
-#define GPIO_PIN_USB_OTG_FS_ID			GPIO_Pin_10
-#define GPIO_AFPIN_USB_OTG_FS_ID		GPIO_PinSource10
+// #define GPIO_PORT_USB_OTG_FS_ID		GPIOA
+// #define GPIO_PIN_USB_OTG_FS_ID			GPIO_Pin_10
+// #define GPIO_AFPIN_USB_OTG_FS_ID		GPIO_PinSource10
 
-#endif
+// #endif
 
 
 //--------------------------------------------------------------
@@ -74,8 +74,8 @@ void USB_OTG_BSP_Init(USB_OTG_CORE_HANDLE *pdev)
   GPIO_InitStructure.GPIO_Pin = GPIO_PIN_USB_DP;
   GPIO_Init(GPIO_PORT_USB_DP, &GPIO_InitStructure);
 
-  GPIO_PinAFConfig(GPIOB,GPIO_AFPIN_USB_DM,GPIO_AF_OTG2_FS);
-  GPIO_PinAFConfig(GPIOB,GPIO_AFPIN_USB_DP,GPIO_AF_OTG2_FS);
+  GPIO_PinAFConfig(GPIO_PORT_USB_DM,GPIO_AFPIN_USB_DM,GPIO_AF_OTG2_FS);
+  GPIO_PinAFConfig(GPIO_PORT_USB_DP,GPIO_AFPIN_USB_DP,GPIO_AF_OTG2_FS);
 
   /* Configure VBUS Pin */
   GPIO_InitStructure.GPIO_Pin = GPIO_PIN_USB_VBUS_FS;

@@ -8,8 +8,8 @@
         "${workspaceFolder}/ext/cmsis/cmsis_boot/inc",
         "${workspaceFolder}/ext/cmsis/cmsis_lib/include",
         "${workspaceFolder}/ext/cmsis/display/inc",
-        "${workspaceFolder}/ext/usb_cdc_dev/include",
-        "${workspaceFolder}/code/inc"
+        "${workspaceFolder}/code/inc",
+        "${workspaceFolder}/ext/usb_stm32f407/include" // alternatively: "${workspaceFolder}/ext/usb_cdc_dev/include"
       ],
       "defines": [
         "STM32F407VG",

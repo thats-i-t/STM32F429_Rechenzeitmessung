@@ -1,7 +1,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "usbd_cdc_vcp.h"
+// #include "usbd_cdc_vcp.h"
+#include "usbd_conf.h"
 
 #include "basic_functions.h"
 #include "periph_functions.h"
@@ -25,6 +26,7 @@ void RefCurrentCalculation(tFxx* IdqRef, tFxx* MrefLim, tFxx Mref, tFxx omEl, co
 	*MrefLim = Mref;
 }
 
+#ifdef STM32F429_439xx
 void send_data_USB(uint8_t* Buf, uint32_t Len)
 {
 	uint32_t i;
@@ -39,6 +41,7 @@ void send_data_USB(uint8_t* Buf, uint32_t Len)
 		}
 	}
 }
+#endif
 
 uint8_t check_header(char *buf){
 
@@ -67,7 +70,7 @@ void calc_opt_op_cur(tFxx *i_0,tFxx m_ref,tFxx n,tFxx *Rs, tFxx *Ls, tFxx *Psi,t
 void process_received_data(char* BufIn, uint32_t Len){
 
 	return;
-	
+
 	Buf = BufArr;
 	uint32_t i = 0;
 	for(i = 0; i < Len; i++)
