@@ -76,6 +76,9 @@ CMSIS_LIB_INC_DIR = $(CMSIS_LIB_BASE_PATH)/include
 CMSIS_LIB_SRC_FILES = $(wildcard $(CMSIS_LIB_SRC_DIR)/*.c)
 CMSIS_LIB_OBJ_FILES = $(patsubst $(CMSIS_LIB_SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(CMSIS_LIB_SRC_FILES))
 
+
+ifeq ($(TARGET),STM32F429_439xx)
+
 # DISPLAY
 CMSIS_DISPLAY_BASE_PATH = $(CMSIS_BASE_PATH)/display
 CMSIS_DISPLAY_SRC_DIR = $(CMSIS_DISPLAY_BASE_PATH)/src
@@ -84,22 +87,33 @@ CMSIS_DISPLAY_INC_DIR = $(CMSIS_DISPLAY_BASE_PATH)/inc
 CMSIS_DISPLAY_SRC_FILES = $(wildcard $(CMSIS_DISPLAY_SRC_DIR)/*.c)
 CMSIS_DISPLAY_OBJ_FILES = $(patsubst $(CMSIS_DISPLAY_SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(CMSIS_DISPLAY_SRC_FILES))
 
+endif
 
 
 ################################################################################
-# USB SOURCES
+# USB + VCP SOURCES
 ################################################################################
 ifeq ($(TARGET),STM32F40_41xxx)
+
 USB_BASE_PATH = $(BASE_DIR)/ext/usb_stm32f407
+VCP_BASE_PATH = $(BASE_DIR)/ext/vcp_stm32f407
+
 else ifeq ($(TARGET),STM32F429_439xx)
+
 USB_BASE_PATH = $(BASE_DIR)/ext/usb_cdc_dev
+VCP_BASE_PATH = 
+
 endif
 
 USB_SRC_DIR = $(USB_BASE_PATH)/src
 USB_INC_DIR = $(USB_BASE_PATH)/include
-
 USB_SRC_FILES = $(wildcard $(USB_SRC_DIR)/*.c)
 USB_OBJ_FILES = $(patsubst $(USB_SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(USB_SRC_FILES))
+
+VCP_SRC_DIR = $(VCP_BASE_PATH)/src
+VCP_INC_DIR = $(VCP_BASE_PATH)/include
+VCP_SRC_FILES = $(wildcard $(VCP_SRC_DIR)/*.c)
+VCP_OBJ_FILES = $(patsubst $(VCP_SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(VCP_SRC_FILES))
 
 ################################################################################
 # SEPARATELY COMPILED LIB
@@ -111,10 +125,28 @@ EXT_LIB = RefCalc_STM32
 # LISTS WITH ALL SOURCES / INCLUDES / OBJECTS
 ################################################################################
 
-SRC_DIRS =     $(CODE_SRC_DIR)   $(CMSIS_LIB_SRC_DIR)   $(CMSIS_BOOT_SRC_DIR) $(CMSIS_DISPLAY_SRC_DIR)  $(USB_SRC_DIR) 
-SRC_FILES =    $(CODE_SRC_FILES) $(CMSIS_LIB_SRC_FILES) $(CMSIS_BOOT_SRC_FILES) $(CMSIS_DISPLAY_SRC_FILES) $(USB_SRC_FILES)  
-OBJ_FILES =    $(CODE_OBJ_FILES) $(CMSIS_LIB_OBJ_FILES) $(CMSIS_BOOT_OBJ_FILES) $(CMSIS_DISPLAY_OBJ_FILES) $(USB_OBJ_FILES)
-INCLUDE_DIRS = $(CODE_INC_DIR)   $(CMSIS_LIB_INC_DIR)   $(CMSIS_BOOT_INC_DIR) $(CMSIS_DISPLAY_INC_DIR)  $(USB_INC_DIR)     
+SRC_DIRS =     $(CODE_SRC_DIR)   $(CMSIS_LIB_SRC_DIR)   $(CMSIS_BOOT_SRC_DIR) 	$(USB_SRC_DIR)
+SRC_FILES =    $(CODE_SRC_FILES) $(CMSIS_LIB_SRC_FILES) $(CMSIS_BOOT_SRC_FILES) $(USB_SRC_FILES)
+OBJ_FILES =    $(CODE_OBJ_FILES) $(CMSIS_LIB_OBJ_FILES) $(CMSIS_BOOT_OBJ_FILES) $(USB_OBJ_FILES)
+INCLUDE_DIRS = $(CODE_INC_DIR)   $(CMSIS_LIB_INC_DIR)   $(CMSIS_BOOT_INC_DIR) 	$(USB_INC_DIR)     
+
+ifeq ($(TARGET),STM32F429_439xx)
+
+SRC_DIRS = $(CMSIS_DISPLAY_SRC_DIR)  
+SRC_FILES = $(CMSIS_DISPLAY_SRC_FILES)
+OBJ_FILES = $(CMSIS_DISPLAY_OBJ_FILES)
+INCLUDE_DIRS = $(CMSIS_DISPLAY_INC_DIR) 
+
+endif
+
+ifeq ($(TARGET),STM32F40_41xxx)
+
+SRC_DIRS +=     $(VCP_SRC_DIR)
+SRC_FILES +=    $(VCP_SRC_FILES)
+OBJ_FILES +=    $(VCP_OBJ_FILES)
+INCLUDE_DIRS += $(VCP_INC_DIR)
+
+endif
 
 INCLUDE_DIRS += $(CMSIS_INC_DIR)
 INCLUDES = $(patsubst %, -I%, $(INCLUDE_DIRS))
@@ -141,8 +173,9 @@ MCFLAGS = -Wall --specs=nosys.specs -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-ab
 -ffunction-sections -g
 
 MCFLAGS += -Wno-strict-aliasing # USB lib has some bad pointer dereferencing :( (but still works)
+MCFLAGS += -Wno-attributes # otherwise in STM32F407-USB-Lib: warning: 'packed' attribute ignored for type 'uint32_t *'
 
-OPTIMIZE = -O3 # -O0 -O3
+OPTIMIZE = -O0 # -O0 -O3
 
 DEPFLAGS = -MD -MP -MF $(OBJ_DIR)/$*.d
 
@@ -232,6 +265,9 @@ $(OBJ_DIR)/%.o: $(CMSIS_DISPLAY_SRC_DIR)/%.c $(mkfile_path) | $(OBJ_DIR)
 	$(CC-COMMAND)
 	
 $(OBJ_DIR)/%.o: $(USB_SRC_DIR)/%.c $(mkfile_path) | $(OBJ_DIR)
+	$(CC-COMMAND)
+	
+$(OBJ_DIR)/%.o: $(VCP_SRC_DIR)/%.c $(mkfile_path) | $(OBJ_DIR)
 	$(CC-COMMAND)
 
 

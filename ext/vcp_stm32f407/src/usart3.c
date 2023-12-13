@@ -1,3 +1,36 @@
+#include "stm32f4xx_usart.h"
+#include "stm32f4xx_rcc.h"
+#include "stm32f4xx_dma.h"
+#include "stm32f4xx.h"
+#include "stm32f4xx_gpio.h"
+#include "misc.h"
+
+#include "string.h"
+
+#include "usart3.h"
+
+// #include "typedef.h"
+// #include "gpio.h"
+// #include "usart3.h"
+// #include "communication.h"
+// #include "tasks.h"
+
+#include "usb.h"
+
+// GPIO B
+#define GPIO_PORT_USART3_TX		GPIOB
+#define GPIO_PIN_USART3_TX		GPIO_Pin_10
+#define GPIO_AFPIN_USART3_TX    GPIO_PinSource10
+
+#define GPIO_PORT_USART3_RX		GPIOB
+#define GPIO_PIN_USART3_RX		GPIO_Pin_11
+#define GPIO_AFPIN_USART3_RX    GPIO_PinSource11
+
+
+#define DMA_USART3_PRIO 5
+#define DMA_USART3_SUBPRIO 5
+
+#define TX_BYTES_PER_MSG 68 // a.t.m. it will send always the whole buffer
 
 void init_GPIO_USART3()
 {
@@ -17,37 +50,23 @@ void init_GPIO_USART3()
 
 }
 
-#include "stm32f4xx_usart.h"
-#include "stm32f4xx_rcc.h"
-#include "stm32f4xx_dma.h"
-#include "stm32f4xx.h"
-
-#include "string.h"
-
-#include "typedef.h"
-#include "gpio.h"
-#include "usart3.h"
-#include "communication.h"
-#include "tasks.h"
-
-
 /* TX Buffer */
-volatile tF32 txBuff_USART3_aui8[N_DATA_VALS_USART3];
+volatile uint8_t txBuff_USART3_aui8[N_DATA_VALS_USART3];
 #define N_DATA_VALS_TX_DMA_USART3_MEM TX_BYTES_PER_MSG
-static tUI8 txDmaBuff_USART3_aui8[N_DATA_VALS_TX_DMA_USART3_MEM];
-static bool flag_TX_busy_USART3 = FALSE;
+static uint8_t txDmaBuff_USART3_aui8[N_DATA_VALS_TX_DMA_USART3_MEM];
+static uint8_t flag_TX_busy_USART3 = 0;
 
 /* RX Buffer */
 #define N_DATA_VALS_DMA_USART3_MEM 50
-static tUI8 rxDmaBuff_USART3_aui8[N_DATA_VALS_DMA_USART3_MEM];
+static uint8_t rxDmaBuff_USART3_aui8[N_DATA_VALS_DMA_USART3_MEM];
 
-static tUI8 rxBuff0_USART3_aui8[N_DATA_VALS_DMA_USART3_MEM];
-static tUI8 rxBuff1_USART3_aui8[N_DATA_VALS_DMA_USART3_MEM];
-static tUI8 * activeRxBuff_USART3_pui8 = NULL;
-static tUI8 * inactiveRxBuff_USART3_pui8 = NULL;
+static uint8_t rxBuff0_USART3_aui8[N_DATA_VALS_DMA_USART3_MEM];
+static uint8_t rxBuff1_USART3_aui8[N_DATA_VALS_DMA_USART3_MEM];
+static uint8_t * activeRxBuff_USART3_pui8 = NULL;
+static uint8_t * inactiveRxBuff_USART3_pui8 = NULL;
 
-volatile tUI32 nrBytesRcvTotal = 0;
-volatile tUI32 nrBytesSentTotal = 0;
+volatile uint32_t nrBytesRcvTotal = 0;
+volatile uint32_t nrBytesSentTotal = 0;
 
 /* RX DMA operations */
 #define PAUSE_USART3_RX_DMA while(DISABLE != DMA_GetCmdStatus(DMA1_Stream1)){ DMA_Cmd(DMA1_Stream1, DISABLE); }
@@ -189,10 +208,10 @@ void init_USART3()
 
 }
 
-bool try_send_data_USART3(tUI8 * data, tUI32 NBytes)
+uint8_t try_send_data_USART3(uint8_t * data, uint32_t NBytes)
 {
     /* without DMA */
-    // tUI32 i;
+    // uint32_t i;
     // for(i = 0; i < NBytes; i++)
     // {
     //     while(SET != USART_GetFlagStatus(USART3, USART_FLAG_TXE));
@@ -201,7 +220,7 @@ bool try_send_data_USART3(tUI8 * data, tUI32 NBytes)
 
 
     /* with DMA */
-    // tUI32 i;
+    // uint32_t i;
     // for(i = 0; i < NBytes; i++)
     // {
     //     txDmaBuff_USART3_aui8[idx_txDmaBuff_USART3_ui32] = data[i];
@@ -211,17 +230,17 @@ bool try_send_data_USART3(tUI8 * data, tUI32 NBytes)
     //     }
     // }
     // idx_txDmaBuff_USART3_ui32 = 0;
-    bool success_b = FALSE;
-    if(FALSE == flag_TX_busy_USART3)
+    uint8_t success_b = 0;
+    if(0 == flag_TX_busy_USART3)
     {
         memcpy(txDmaBuff_USART3_aui8, data, NBytes);
 
         clear_TX_DMA_flags();
         // DMA_SetCurrDataCounter(DMA1_Stream3, N_DATA_VALS_TX_DMA_USART3_MEM);
-        flag_TX_busy_USART3 = TRUE;
+        flag_TX_busy_USART3 = 1;
         ENABLE_USART3_TX_DMA;
 
-        success_b = TRUE;
+        success_b = 1;
     }
     return success_b;
 }
@@ -289,7 +308,7 @@ void read_USART3()
     }
 
     PAUSE_USART3_RX_DMA;
-    const tUI32 nrValsRcv = N_DATA_VALS_DMA_USART3_MEM - DMA_GetCurrDataCounter(DMA1_Stream1); /* Note: Calculation this way because DMA data counter counts backwards */
+    const uint32_t nrValsRcv = N_DATA_VALS_DMA_USART3_MEM - DMA_GetCurrDataCounter(DMA1_Stream1); /* Note: Calculation this way because DMA data counter counts backwards */
     nrBytesRcvTotal += nrValsRcv;
     if(0 < nrValsRcv)
     {
@@ -301,10 +320,15 @@ void read_USART3()
     
 	if(0 < nrValsRcv) /* not really needed as long as only called in e.g. RX DMA ISR */
     {
+
+        // Loopback:
+        // try_send_data_USART3((uint8_t*)&activeRxBuff_USART3_pui8[0], nrValsRcv);
+        // return;
+
         /* Loop through received data */
-        tUI32 sidx = 0;
-        tUI32 eidx = 0;
-        for(eidx = 0; eidx < nrValsRcv;)
+        uint32_t sidx = 0;
+        uint32_t eidx = 0;
+        for(eidx = 0; eidx < nrValsRcv; )
         {
             if(activeRxBuff_USART3_pui8[eidx] == '\0')
             {
@@ -317,13 +341,13 @@ void read_USART3()
                 eidx++;
             }
         }
-        const tUI32 nrValsRemaining = eidx - sidx;
+        const uint32_t nrValsRemaining = eidx - sidx;
 
         /* Copy remaining values from active buffer to inactive buffer before switching buffers */
         memcpy(inactiveRxBuff_USART3_pui8, &activeRxBuff_USART3_pui8[eidx], nrValsRemaining);
 
         /* Switch buffer */
-        tUI8 * tmpRxBuff_pui8 = activeRxBuff_USART3_pui8;
+        uint8_t * tmpRxBuff_pui8 = activeRxBuff_USART3_pui8;
         activeRxBuff_USART3_pui8 = inactiveRxBuff_USART3_pui8;
         inactiveRxBuff_USART3_pui8 = tmpRxBuff_pui8;
     }
@@ -342,5 +366,5 @@ void DMA1_Stream3_IRQHandler()
 	// DMA_GetITStatus(DMA1_Stream3, DMA_IT_TCIF3);
 	DMA_ClearITPendingBit(DMA1_Stream3, DMA_IT_TCIF3); // ISR when the transfer is complete
     clear_TX_DMA_flags();
-    flag_TX_busy_USART3 = FALSE;
+    flag_TX_busy_USART3 = 0;
 }

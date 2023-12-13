@@ -9,8 +9,6 @@
 #include "stm32f4xx_tim.h"
 #include "stm32f4xx_exti.h"
 #include "stm32f4xx_syscfg.h"
-#include "tm_stm32f4_ili9341.h"
-#include "tm_stm32f4_fonts.h"
 
 #include "basic_functions.h"
 #include "periph_functions.h"
@@ -18,11 +16,14 @@
 #include "usb.h"
 
 #ifdef STM32F429_439xx
+#include "tm_stm32f4_ili9341.h"
+#include "tm_stm32f4_fonts.h"
 #include "usb_defines.h"
 #include "usbd_desc.h"
 #include "stm32_ub_usb_cdc.h"
 #elif (defined STM32F40_41xxx)
 #include "usb_user.h"
+#include "usart3.h"
 #endif
 
 int main(void)
@@ -43,6 +44,7 @@ int main(void)
   	// USB_CDC_RXSTATUS_t check = RX_EMPTY;
 #elif (defined STM32F40_41xxx)
 	init_usb();
+	init_USART3();
 #endif
 
 #ifdef STM32F429_439xx
@@ -115,10 +117,14 @@ int main(void)
 #elif (defined STM32F40_41xxx) 
 		// Toggle green LED
 		GPIO_SetBits(GPIOD, GPIO_Pin_12);
-		waitMs(500);
+		waitMs(1);
 		waitUs(10);
 		GPIO_ResetBits(GPIOD, GPIO_Pin_12);
-		waitMs(500);
+		waitMs(1);
+
+		read_USART3();
+		// uint8_t data = 1;
+		// try_send_data_USART3(&data, 1);
 #endif
 		
 		/* ############################################################################################### */

@@ -3,6 +3,11 @@
 
 // #include "usbd_cdc_vcp.h"
 #include "usbd_conf.h"
+#include "usb_user.h"
+
+#ifdef STM32F40_41xxx
+#include "usart3.h"
+#endif
 
 #include "basic_functions.h"
 #include "periph_functions.h"
@@ -69,8 +74,6 @@ void calc_opt_op_cur(tFxx *i_0,tFxx m_ref,tFxx n,tFxx *Rs, tFxx *Ls, tFxx *Psi,t
 
 void process_received_data(char* BufIn, uint32_t Len){
 
-	return;
-
 	Buf = BufArr;
 	uint32_t i = 0;
 	for(i = 0; i < Len; i++)
@@ -109,44 +112,44 @@ void process_received_data(char* BufIn, uint32_t Len){
 			p[5] = (tFxx)Imax;
 			p[6] = (tFxx)Uzk;
 
-			startTimeMeas(); // log timestamp at start			
-			RefCurrentCalculation(IdqRef, MrefLim, Mref, omEl, (const tFxx*)&p); // call function-under-test
-			stopTimeMeas((float*)&timPassedInUs, (float*)&timPassedMaxInUs); // log time directly after end of function
-
-			// tFxx i_0[2] = { 0., 0. };
-			// tFxx m_ref = 250.f;
-			// tFxx n = 10500.f;
-			// tFxx Rsx[4] = { 0.057021246441950f, 0.f, 0.057021246441950f, 0.f };
-			// tFxx Ls[4] = {1.057812045982978f, 0.f, 0.f , 3.541165744747624f}; 
-			// tFxx Psi[2] = {0.596176046255743f, -6.284096542285975e-05f};
-			// tFxx Usmax = 350.f;
-			// tFxx Ismax = 520.f;
-			// tFxx n_nom = 1335.f;
-			// tFxx np = 4.f;
-			// tFxx ibatmax = 360.f;
-			// tFxx ibatmin = -350.f;
-			// tFxx uzk = 650.f;
-			// tFxx n_max = 18250.f;
-			// tFxx output[3];
-			
-			// startTimeMeas(); // log timestamp at start				
-			// calc_opt_op_cur(  i_0, // call function-under-test
-			// 				m_ref,
-			// 				n,
-			// 				Rsx, 
-			// 				Ls, 
-			// 				Psi,
-			// 				Usmax,
-			// 				Ismax,
-			// 				n_nom,
-			// 				np,
-			// 				ibatmax,
-			// 				ibatmin,
-			// 				uzk,
-			// 				n_max,
-			// 				output
-			// 			);
+			// startTimeMeas(); // log timestamp at start			
+			// RefCurrentCalculation(IdqRef, MrefLim, Mref, omEl, (const tFxx*)&p); // call function-under-test
 			// stopTimeMeas((float*)&timPassedInUs, (float*)&timPassedMaxInUs); // log time directly after end of function
+
+			tFxx i_0[2] = { 0., 0. };
+			tFxx m_ref = 250.f;
+			tFxx n = 10500.f;
+			tFxx Rsx[4] = { 0.057021246441950f, 0.f, 0.057021246441950f, 0.f };
+			tFxx Ls[4] = {1.057812045982978f, 0.f, 0.f , 3.541165744747624f}; 
+			tFxx Psi[2] = {0.596176046255743f, -6.284096542285975e-05f};
+			tFxx Usmax = 350.f;
+			tFxx Ismax = 520.f;
+			tFxx n_nom = 1335.f;
+			tFxx np = 4.f;
+			tFxx ibatmax = 360.f;
+			tFxx ibatmin = -350.f;
+			tFxx uzk = 650.f;
+			tFxx n_max = 18250.f;
+			tFxx output[3];
+			
+			startTimeMeas(); // log timestamp at start				
+			calc_opt_op_cur(  i_0, // call function-under-test
+							m_ref,
+							n,
+							Rsx, 
+							Ls, 
+							Psi,
+							Usmax,
+							Ismax,
+							n_nom,
+							np,
+							ibatmax,
+							ibatmin,
+							uzk,
+							n_max,
+							output
+						);
+			stopTimeMeas((float*)&timPassedInUs, (float*)&timPassedMaxInUs); // log time directly after end of function
 
 			float testVar = 123.4;
 			uint8_t TxBuff8[LEN_TX_FRAME];
@@ -159,7 +162,14 @@ void process_received_data(char* BufIn, uint32_t Len){
 			memcpy((char*)&TxBuff32[4], (char*)&pt32[11], 4); // Timestamp is sent back (loopback)
 			memcpy((char*)&TxBuff32[5], (char*)&timPassedInUs, 4);
 			memcpy((char*)&TxBuff32[6], (char*)&testVar, 4);
-			send_data_USB(TxBuff8, LEN_TX_FRAME);
+			
+
+			// send_data_USB(TxBuff8, LEN_TX_FRAME);
+
+#ifdef STM32F40_41xxx
+			try_send_data_USART3(TxBuff8, LEN_TX_FRAME);
+#endif
+
 		}
 		bufend = 0;
 	}
