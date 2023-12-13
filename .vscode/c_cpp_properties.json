@@ -25,7 +25,8 @@
         "USE_EMBEDDED_PHY",
         "__ASSEMBLY__",
         "__VFP_FP__",
-        "USE_DEVICE_MODE"
+        "USE_DEVICE_MODE",
+        "STM32F40_41xxx" // alternatively: STM32F429_439xx
       ],
       "compilerPath": "./tools/gcc-arm-none-eabi-7-2018-q2-update-win32/bin/ARM-NONE-EABI-GCC.EXE"
     }

@@ -8,6 +8,8 @@
 #
 ################################################################################
 
+# TARGET can be STM32F40_41xxx (for STM32F407) or STM32F429_439xx
+TARGET = STM32F40_41xxx
 
 ################################################################################
 # PROJECT
@@ -94,6 +96,11 @@ USB_INC_DIR = $(USB_BASE_PATH)/include
 USB_SRC_FILES = $(wildcard $(USB_SRC_DIR)/*.c)
 USB_OBJ_FILES = $(patsubst $(USB_SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(USB_SRC_FILES))
 
+################################################################################
+# SEPARATELY COMPILED LIB
+################################################################################
+EXT_LIB_PATH = $(BASE_DIR)/ext
+EXT_LIB = RefCalc_STM32
 
 ################################################################################
 # LISTS WITH ALL SOURCES / INCLUDES / OBJECTS
@@ -118,7 +125,7 @@ CP = $(COMPILERPATH)/arm-none-eabi-objcopy
 OD = $(COMPILERPATH)/arm-none-eabi-objdump
 CSIZE = $(COMPILERPATH)/arm-none-eabi-size
 
-DEFS = -DUSE_STDPERIPH_DRIVER -DSTM32F429_439xx -DSTM32F4XX -DSTM32F4xx -DSTM32F4 -DHSE_VALUE=8000000 -DHSI_VALUE=16000000 \
+DEFS = -DUSE_STDPERIPH_DRIVER -D$(TARGET) -DSTM32F4XX -DSTM32F4xx -DSTM32F4 -DHSE_VALUE=8000000 -DHSI_VALUE=16000000 \
 -D__FPU_USED -DUSE_EMBEDDED_PHY -DUSE_USB_OTG_FS -D__ASSEMBLY__ -D__FPU_PRESENT -D__VFP_FP__ -DUSE_DEVICE_MODE
 
 #ADD_DEFS = -DFP_DT=0 
@@ -200,7 +207,7 @@ $(BIN): $(ELF)
 ################################################################################
 $(ELF): $(OBJ_FILES)
 	@echo Linking [$@]
-	@$(CC) $(CFLAGS) $^ -o $@ $(LFLAGS) -Wl,--gc-sections
+	@$(CC) $(CFLAGS) $^ -L$(EXT_LIB_PATH) -l$(EXT_LIB) -o $@ $(LFLAGS) -Wl,--gc-sections
 	@$(CSIZE) $@
 
 ################################################################################
