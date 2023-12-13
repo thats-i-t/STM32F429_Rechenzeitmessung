@@ -15,49 +15,87 @@ extern uint32_t USBD_OTG_EP1OUT_ISR_Handler (USB_OTG_CORE_HANDLE *pdev);
 
 
 
+// #define GPIO_PORT_USB_VBUS		GPIOA
+// #define GPIO_PIN_USB_VBUS		GPIO_Pin_9
+
+// #define GPIO_PORT_USB_ID		GPIOA
+// #define GPIO_PIN_USB_ID			GPIO_Pin_10
+
+#ifdef STM32F429_439xx
+
+#define GPIO_PORT_USB_DP		GPIOB
+#define GPIO_PIN_USB_DP			GPIO_Pin_15
+#define GPIO_AFPIN_USB_DP		GPIO_PinSource15
+
+#define GPIO_PORT_USB_DM		GPIOB
+#define GPIO_PIN_USB_DM			GPIO_Pin_14
+#define GPIO_AFPIN_USB_DM		GPIO_PinSource14
+
+#define GPIO_PORT_USB_VBUS_FS		GPIOB
+#define GPIO_PIN_USB_VBUS_FS			GPIO_Pin_13
+
+#define GPIO_PORT_USB_OTG_FS_ID		GPIOB
+#define GPIO_PIN_USB_OTG_FS_ID			GPIO_Pin_12
+#define GPIO_AFPIN_USB_OTG_FS_ID		GPIO_PinSource12
+
+#elif (defined STM32F40_41xxx) // for STM32F407
+
+#define GPIO_PORT_USB_DP		GPIOA
+#define GPIO_PIN_USB_DP			GPIO_Pin_12
+#define GPIO_AFPIN_USB_DP		GPIO_PinSource12
+
+#define GPIO_PORT_USB_DM		GPIOA
+#define GPIO_PIN_USB_DM			GPIO_Pin_11
+#define GPIO_AFPIN_USB_DM		GPIO_PinSource11
+
+#define GPIO_PORT_USB_VBUS_FS		GPIOA
+#define GPIO_PIN_USB_VBUS_FS			GPIO_Pin_9
+
+#define GPIO_PORT_USB_OTG_FS_ID		GPIOA
+#define GPIO_PIN_USB_OTG_FS_ID			GPIO_Pin_10
+#define GPIO_AFPIN_USB_OTG_FS_ID		GPIO_PinSource10
+
+#endif
+
 
 //--------------------------------------------------------------
 void USB_OTG_BSP_Init(USB_OTG_CORE_HANDLE *pdev)
 {
-
   GPIO_InitTypeDef GPIO_InitStructure;
 
-
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
-
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14 | // PB14 OTG_HS_DM
-                                GPIO_Pin_15;  // PB15 OTG_HS_DP
 
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  GPIO_Init(GPIOB, &GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Pin = GPIO_PIN_USB_DM;
+  GPIO_Init(GPIO_PORT_USB_DM, &GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Pin = GPIO_PIN_USB_DP;
+  GPIO_Init(GPIO_PORT_USB_DP, &GPIO_InitStructure);
 
-  GPIO_PinAFConfig(GPIOB,GPIO_PinSource14,GPIO_AF_OTG2_FS); // PB14 OTG_FS_DM
-  GPIO_PinAFConfig(GPIOB,GPIO_PinSource15,GPIO_AF_OTG2_FS); // PB15 OTG_FS_DP
+  GPIO_PinAFConfig(GPIOB,GPIO_AFPIN_USB_DM,GPIO_AF_OTG2_FS);
+  GPIO_PinAFConfig(GPIOB,GPIO_AFPIN_USB_DP,GPIO_AF_OTG2_FS);
 
   /* Configure VBUS Pin */
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13; // PB13 VBUS_FS (GPIO)
+  GPIO_InitStructure.GPIO_Pin = GPIO_PIN_USB_VBUS_FS;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  GPIO_Init(GPIOB, &GPIO_InitStructure);
+  GPIO_Init(GPIO_PORT_USB_VBUS_FS, &GPIO_InitStructure);
 
   /* Configure ID pin */
-  GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_12; // PB12 OTG_FS_ID
+  GPIO_InitStructure.GPIO_Pin =  GPIO_PIN_USB_OTG_FS_ID;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-  GPIO_Init(GPIOB, &GPIO_InitStructure);
-  GPIO_PinAFConfig(GPIOB,GPIO_PinSource12,GPIO_AF_OTG2_FS); // PB12 OTG_HS_ID  12
+  GPIO_Init(GPIO_PORT_USB_OTG_FS_ID, &GPIO_InitStructure);
+  GPIO_PinAFConfig(GPIO_PORT_USB_OTG_FS_ID, GPIO_AFPIN_USB_OTG_FS_ID, GPIO_AF_OTG2_FS);
 
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_OTG_HS, ENABLE);
-
-
 }
 
 //--------------------------------------------------------------

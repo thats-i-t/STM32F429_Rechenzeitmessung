@@ -7,35 +7,6 @@
 #include "stm32f4xx_adc.h"
 #include "misc.h"
 
-
-// #define GPIO_PORT_USB_VBUS		GPIOA
-// #define GPIO_PIN_USB_VBUS		GPIO_Pin_9
-
-// #define GPIO_PORT_USB_ID		GPIOA
-// #define GPIO_PIN_USB_ID			GPIO_Pin_10
-
-#ifdef STM32F429_439xx
-
-#define GPIO_PORT_USB_DP		GPIOB
-#define GPIO_PIN_USB_DP			GPIO_Pin_15
-#define GPIO_AFPIN_USB_DP		GPIO_PinSource15
-
-#define GPIO_PORT_USB_DM		GPIOB
-#define GPIO_PIN_USB_DM			GPIO_Pin_14
-#define GPIO_AFPIN_USB_DM		GPIO_PinSource14
-
-#elif (defined STM32F407)
-
-#define GPIO_PORT_USB_DP		GPIOA
-#define GPIO_PIN_USB_DP			GPIO_Pin_11
-#define GPIO_AFPIN_USB_DP		GPIO_PinSource11
-
-#define GPIO_PORT_USB_DM		GPIOA
-#define GPIO_PIN_USB_DM			GPIO_Pin_12
-#define GPIO_AFPIN_USB_DM		GPIO_PinSource12
-
-#endif
-
 volatile uint8_t UsrBtn_Trigger = 0;
 volatile uint32_t timStart;
 volatile float timPassedMaxInUsGlobal = 0.f;
@@ -53,6 +24,7 @@ void initClocks()
 
 void initGPIO()
 {
+#ifdef STM32F429_439xx
 	GPIO_InitTypeDef GPIO_InitStruct;
 	GPIO_StructInit(&GPIO_InitStruct);
 	GPIO_InitStruct.GPIO_Pin=GPIO_Pin_2 | GPIO_Pin_6;
@@ -70,59 +42,71 @@ void initGPIO()
 	GPIO_Init(GPIOG, &GPIO_InitStruct);
 	GPIO_ResetBits(GPIOG, GPIO_Pin_13);
 	GPIO_SetBits(GPIOG, GPIO_Pin_14);
+
+#elif (defined STM32F40_41xxx) 
+	// LEDs
+	GPIO_InitTypeDef GPIO_InitStruct;
+	GPIO_InitStruct.GPIO_Pin=GPIO_Pin_12;
+	GPIO_Init(GPIOD, &GPIO_InitStruct);
+	GPIO_SetBits(GPIOD, GPIO_Pin_12);
+
+#endif
+
 }
 
-void init_GPIO_USB()
-{
-	GPIO_InitTypeDef GPIO_InitStructure;
+// see usb_bsp.c !!!
+//
+// void init_GPIO_USB()
+// {
+// 	GPIO_InitTypeDef GPIO_InitStructure;
 
-	/* Configure Data-Pin DP */
-	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_USB_DP;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	GPIO_Init(GPIO_PORT_USB_DP, &GPIO_InitStructure);
-	GPIO_PinAFConfig(GPIO_PORT_USB_DP, GPIO_AFPIN_USB_DP, GPIO_AF_OTG_FS);
+// 	/* Configure Data-Pin DP */
+// 	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_USB_DP;
+// 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+// 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+// 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+// 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+// 	GPIO_Init(GPIO_PORT_USB_DP, &GPIO_InitStructure);
+// 	GPIO_PinAFConfig(GPIO_PORT_USB_DP, GPIO_AFPIN_USB_DP, GPIO_AF_OTG_FS);
 
-	/* Configure Data-Pin DM */
-	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_USB_DM;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	GPIO_Init(GPIO_PORT_USB_DM, &GPIO_InitStructure);
-	GPIO_PinAFConfig(GPIO_PORT_USB_DM, GPIO_AFPIN_USB_DM, GPIO_AF_OTG_FS);
+// 	/* Configure Data-Pin DM */
+// 	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_USB_DM;
+// 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+// 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+// 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+// 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+// 	GPIO_Init(GPIO_PORT_USB_DM, &GPIO_InitStructure);
+// 	GPIO_PinAFConfig(GPIO_PORT_USB_DM, GPIO_AFPIN_USB_DM, GPIO_AF_OTG_FS);
 
-	/* Configure OTG FS ID */
-	// GPIO_InitStructure.GPIO_Pin =  GPIO_PIN_USB_ID;
-	// GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-	// GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN; // GPIO_Mode_AF  // GPIO_Mode_IN
-	// GPIO_InitStructure.GPIO_OType = GPIO_OType_PP; // GPIO_OType_OD // GPIO_OType_PP
-	// GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP; // GPIO_PuPd_NOPULL // GPIO_PuPd_UP
-	// GPIO_Init(GPIO_PORT_USB_ID, &GPIO_InitStructure);
-	// GPIO_PinAFConfig(GPIO_PORT_USB_ID, GPIO_PIN_USB_ID, GPIO_AF_OTG_FS); // GPIO_AF_OTG2_HS // GPIO_AF_OTG1_FS
+// 	/* Configure OTG FS ID */
+// 	// GPIO_InitStructure.GPIO_Pin =  GPIO_PIN_USB_ID;
+// 	// GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+// 	// GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN; // GPIO_Mode_AF  // GPIO_Mode_IN
+// 	// GPIO_InitStructure.GPIO_OType = GPIO_OType_PP; // GPIO_OType_OD // GPIO_OType_PP
+// 	// GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP; // GPIO_PuPd_NOPULL // GPIO_PuPd_UP
+// 	// GPIO_Init(GPIO_PORT_USB_ID, &GPIO_InitStructure);
+// 	// GPIO_PinAFConfig(GPIO_PORT_USB_ID, GPIO_PIN_USB_ID, GPIO_AF_OTG_FS); // GPIO_AF_OTG2_HS // GPIO_AF_OTG1_FS
 
-	/* Configure  VBUS Pin (Input) */
-	// GPIO_InitStructure.GPIO_Pin = GPIO_PIN_USB_VBUS;
-	// GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-	// GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-	// GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
-	// GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	// GPIO_Init(GPIO_PORT_USB_VBUS, &GPIO_InitStructure);
-	// GPIO_PinAFConfig(GPIO_PORT_USB_VBUS, GPIO_PIN_USB_VBUS, GPIO_AF_OTG_FS);
+// 	/* Configure  VBUS Pin (Input) */
+// 	// GPIO_InitStructure.GPIO_Pin = GPIO_PIN_USB_VBUS;
+// 	// GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+// 	// GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+// 	// GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+// 	// GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+// 	// GPIO_Init(GPIO_PORT_USB_VBUS, &GPIO_InitStructure);
+// 	// GPIO_PinAFConfig(GPIO_PORT_USB_VBUS, GPIO_PIN_USB_VBUS, GPIO_AF_OTG_FS);
 
-	/* Configure OTG FS PSO (VBUS Enable) */
-	/*
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
-	GPIO_SetBits(GPIOC, GPIO_Pin_4);
-	*/
-}
+// 	/* Configure OTG FS PSO (VBUS Enable) */
+// 	/*
+// 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
+// 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+// 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+// 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+// 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+// 	GPIO_Init(GPIOB, &GPIO_InitStructure);
+// 	GPIO_SetBits(GPIOC, GPIO_Pin_4);
+// 	*/
+// }
 
 void initUserButton()
 {

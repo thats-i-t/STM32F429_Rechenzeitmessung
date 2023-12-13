@@ -27,14 +27,14 @@ int main(void)
 	
 	// Init peripherals
 	initClocks();
-#ifdef STM32F429_439xx
 	initGPIO();
+#ifdef STM32F429_439xx
 	initUserButton();
 #endif
 	initTIM1();
 	UB_USB_CDC_Init();
-	// char rx_buf[APP_TX_BUF_SIZE];
-  	// USB_CDC_RXSTATUS_t check = RX_EMPTY;
+	char rx_buf[APP_TX_BUF_SIZE];
+  	USB_CDC_RXSTATUS_t check = RX_EMPTY;
 
 #ifdef STM32F429_439xx
 	// Init display
@@ -87,6 +87,7 @@ int main(void)
 		/* ############################################################################################### */
 		/* This was used for initially testing the time measurement */
 		/* ############################################################################################### */
+#ifdef STM32F429_439xx
 		// startTimeMeas(); // log timestamp at start
 
 		// // Toggle green LED
@@ -102,20 +103,28 @@ int main(void)
 		// // Display the time passed
 		// disp_fvar("Time passed in us: ", (float)timPassedInUs, 5);
 		// disp_fvar("Time passed max in us: ", (float)timPassedMaxInUs, 7);
+#elif (defined STM32F40_41xxx) 
+		// Toggle green LED
+		GPIO_SetBits(GPIOD, GPIO_Pin_12);
+		waitMs(500);
+		waitUs(10);
+		GPIO_ResetBits(GPIOD, GPIO_Pin_12);
+		waitMs(500);
+#endif
 		
 		/* ############################################################################################### */
 
 		/* ############################################################################################### */
 		// USB communication (this loopback was only used for testing)
 		/* ############################################################################################### */
-		// if(UB_USB_CDC_GetStatus() == USB_CDC_CONNECTED)
-		// {
-		// 	check = UB_USB_CDC_ReceiveString(rx_buf);
-		// 	if(check == RX_READY)
-		// 	{
-		// 		UB_USB_CDC_SendString(rx_buf,LFCR);
-		// 	}
-		// }
+		if(UB_USB_CDC_GetStatus() == USB_CDC_CONNECTED)
+		{
+			check = UB_USB_CDC_ReceiveString(rx_buf);
+			if(check == RX_READY)
+			{
+				UB_USB_CDC_SendString(rx_buf,LFCR);
+			}
+		}
 		/* ############################################################################################### */
 	}
 }
