@@ -89,7 +89,12 @@ CMSIS_DISPLAY_OBJ_FILES = $(patsubst $(CMSIS_DISPLAY_SRC_DIR)/%.c,$(OBJ_DIR)/%.o
 ################################################################################
 # USB SOURCES
 ################################################################################
+ifeq ($(TARGET),STM32F40_41xxx)
+USB_BASE_PATH = $(BASE_DIR)/ext/usb_stm32f407
+else ifeq ($(TARGET),STM32F429_439xx)
 USB_BASE_PATH = $(BASE_DIR)/ext/usb_cdc_dev
+endif
+
 USB_SRC_DIR = $(USB_BASE_PATH)/src
 USB_INC_DIR = $(USB_BASE_PATH)/include
 

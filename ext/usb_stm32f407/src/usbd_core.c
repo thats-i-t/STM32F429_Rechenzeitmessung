@@ -3,10 +3,13 @@
 #include "usbd_ioreq.h"
 #include "usb_dcd_int.h"
 #include "usbd_class_core.h"
-#include "usb.h"
+#include "usb_user.h"
+#include "misc.h"
 
 __IO USB_OTG_DCTL_TypeDef SET_TEST_MODE;
 
+#define USB_PRIO 5
+#define USB_SUBPRIO 5
 
 void USBD_Init(USB_OTG_CORE_HANDLE *pdev, USB_OTG_CORE_ID_TypeDef coreID, USBD_DEVICE *pDevice)
 {

@@ -52,7 +52,7 @@ USBD_Status  USBD_StdDevReq (USB_OTG_CORE_HANDLE  *pdev, USB_SETUP_REQ  *req)
     break;
 
   case USB_REQ_SET_ADDRESS:
-    usbDevAddress = req->wValue;
+    // usbDevAddress = req->wValue;
     USBD_SetAddress(pdev, req);
     break;
 
