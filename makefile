@@ -119,7 +119,7 @@ VCP_OBJ_FILES = $(patsubst $(VCP_SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(VCP_SRC_FILES))
 # SEPARATELY COMPILED LIB
 ################################################################################
 EXT_LIB_PATH = $(BASE_DIR)/ext
-EXT_LIB = RefCalc_STM32
+EXT_LIB = $(patsubst %, -l%, RefCalc_STM32 RefCurrCalcOD_STM32)
 
 ################################################################################
 # LISTS WITH ALL SOURCES / INCLUDES / OBJECTS
@@ -245,7 +245,7 @@ $(BIN): $(ELF)
 ################################################################################
 $(ELF): $(OBJ_FILES)
 	@echo Linking [$@]
-	@$(CC) $(CFLAGS) $^ -L$(EXT_LIB_PATH) -l$(EXT_LIB) -o $@ $(LFLAGS) -Wl,--gc-sections
+	@$(CC) $(CFLAGS) $^ -L$(EXT_LIB_PATH) $(EXT_LIB) -o $@ $(LFLAGS) -Wl,--gc-sections
 	@$(CSIZE) $@
 
 ################################################################################
@@ -317,13 +317,14 @@ tmp = $(DEP_FILES)
 
 .PHONY: test
 test:# Target for testing purposes
-	@echo Makefile path: $(mkfile_path)
+#   @echo Makefile path: $(mkfile_path)
 #	@echo usb src files: $(USB_SRC_FILES)
 #	@echo proj src files: $(PROJECT_SRC_FILES)
-	@echo matlab src dir $(PROJ_MATLAB_SRC_DIR)
+#	@echo matlab src dir $(PROJ_MATLAB_SRC_DIR)
 #	@echo matlab src files: $(PROJ_MATLAB_SRC_FILES)
 #	@echo matlab obj files: $(PROJ_MATLAB_OBJ_FILES)
 #	@echo tmp variable: $(tmp)
+	@echo Ext Libs: $(EXT_LIB)
 
 
 ################################################################################

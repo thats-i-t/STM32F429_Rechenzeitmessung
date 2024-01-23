@@ -3,8 +3,15 @@
 
 #include <stdint.h>
 
-#define N_DATA_VALS_USART3 4
-extern volatile uint8_t txBuff_USART3_aui8[N_DATA_VALS_USART3];
+#include "usb.h"
+
+#define N_DATA_VALS_TX_USART3 LEN_TX_FRAME
+#define TX_BYTES_PER_MSG N_DATA_VALS_TX_USART3 // a.t.m. it will send always the whole buffer
+
+#define DMA_USART3_PRIO 5
+#define DMA_USART3_SUBPRIO 5
+
+extern volatile uint8_t txBuff_USART3_aui8[N_DATA_VALS_TX_USART3];
 
 
 void init_GPIO_USART3();

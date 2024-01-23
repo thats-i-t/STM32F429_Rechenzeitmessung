@@ -46,9 +46,30 @@ void initGPIO()
 #elif (defined STM32F40_41xxx) 
 	// LEDs
 	GPIO_InitTypeDef GPIO_InitStruct;
+	GPIO_InitStruct.GPIO_Mode=GPIO_Mode_OUT;
+	GPIO_InitStruct.GPIO_OType=GPIO_OType_PP;
+	GPIO_InitStruct.GPIO_PuPd=GPIO_PuPd_UP;
+	GPIO_InitStruct.GPIO_Speed= GPIO_Speed_2MHz;
+
+	/* green LED */
 	GPIO_InitStruct.GPIO_Pin=GPIO_Pin_12;
 	GPIO_Init(GPIOD, &GPIO_InitStruct);
 	GPIO_SetBits(GPIOD, GPIO_Pin_12);
+
+	/* orange LED */
+	GPIO_InitStruct.GPIO_Pin=GPIO_Pin_13;
+	GPIO_Init(GPIOD, &GPIO_InitStruct);
+	GPIO_SetBits(GPIOD, GPIO_Pin_13);
+
+	/* red LED */
+	GPIO_InitStruct.GPIO_Pin=GPIO_Pin_14;
+	GPIO_Init(GPIOD, &GPIO_InitStruct);
+	GPIO_SetBits(GPIOD, GPIO_Pin_14);
+
+	/* blue LED */
+	GPIO_InitStruct.GPIO_Pin=GPIO_Pin_15;
+	GPIO_Init(GPIOD, &GPIO_InitStruct);
+	GPIO_SetBits(GPIOD, GPIO_Pin_15);
 
 #endif
 

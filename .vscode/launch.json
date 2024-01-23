@@ -12,8 +12,8 @@
             "type": "cortex-debug",
             "servertype": "stlink",
             "interface": "swd",
-            // "device": "STM32F407VG",
-            "device": "STM32F429ZI",
+            "device": "STM32F407VG",
+            // "device": "STM32F429ZI",
             "runToEntryPoint": "main",
             "showDevDebugOutput": "none",
             // "svdFile": "${workspaceRoot}/.vscode/STM32F407.svd",
@@ -21,7 +21,7 @@
             //     "interface/stlink-v2-1.cfg",
             //     "target/stm32f4x.cfg"
             // ],
-            // "preLaunchTask": "${defaultBuildTask}",
+            "preLaunchTask": "${defaultBuildTask}",
             // "liveWatch": {
             //     "enabled": true,
             //     "samplesPerSecond": 4

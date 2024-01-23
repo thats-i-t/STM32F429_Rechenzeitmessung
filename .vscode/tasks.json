@@ -5,6 +5,7 @@
 			"label": "Make",
 			"type": "process",
 			"command": "make.bat",
+			"args": ["flash"],
 			"options": {
 				"cwd": "${workspaceRoot}"
 			},

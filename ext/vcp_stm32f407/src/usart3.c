@@ -27,37 +27,14 @@
 #define GPIO_AFPIN_USART3_RX    GPIO_PinSource11
 
 
-#define DMA_USART3_PRIO 5
-#define DMA_USART3_SUBPRIO 5
-
-#define TX_BYTES_PER_MSG 68 // a.t.m. it will send always the whole buffer
-
-void init_GPIO_USART3()
-{
-	GPIO_InitTypeDef GPIO_InitStructure;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-
-	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_USART3_TX;
-	GPIO_Init(GPIO_PORT_USART3_TX, &GPIO_InitStructure);
-	GPIO_PinAFConfig(GPIO_PORT_USART3_TX, GPIO_AFPIN_USART3_TX, GPIO_AF_USART3);
-
-	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_USART3_RX;
-	GPIO_Init(GPIO_PORT_USART3_RX, &GPIO_InitStructure);
-	GPIO_PinAFConfig(GPIO_PORT_USART3_RX, GPIO_AFPIN_USART3_RX, GPIO_AF_USART3);
-
-}
-
 /* TX Buffer */
-volatile uint8_t txBuff_USART3_aui8[N_DATA_VALS_USART3];
+volatile uint8_t txBuff_USART3_aui8[N_DATA_VALS_TX_USART3];
 #define N_DATA_VALS_TX_DMA_USART3_MEM TX_BYTES_PER_MSG
 static uint8_t txDmaBuff_USART3_aui8[N_DATA_VALS_TX_DMA_USART3_MEM];
 static uint8_t flag_TX_busy_USART3 = 0;
 
 /* RX Buffer */
-#define N_DATA_VALS_DMA_USART3_MEM 50
+#define N_DATA_VALS_DMA_USART3_MEM LEN_RX_FRAME
 static uint8_t rxDmaBuff_USART3_aui8[N_DATA_VALS_DMA_USART3_MEM];
 
 static uint8_t rxBuff0_USART3_aui8[N_DATA_VALS_DMA_USART3_MEM];
@@ -77,6 +54,24 @@ volatile uint32_t nrBytesSentTotal = 0;
 #define ENABLE_USART3_TX_DMA while(ENABLE != DMA_GetCmdStatus(DMA1_Stream3)){ DMA_Cmd(DMA1_Stream3, ENABLE); }
 
 
+
+void init_GPIO_USART3()
+{
+	GPIO_InitTypeDef GPIO_InitStructure;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_USART3_TX;
+	GPIO_Init(GPIO_PORT_USART3_TX, &GPIO_InitStructure);
+	GPIO_PinAFConfig(GPIO_PORT_USART3_TX, GPIO_AFPIN_USART3_TX, GPIO_AF_USART3);
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_USART3_RX;
+	GPIO_Init(GPIO_PORT_USART3_RX, &GPIO_InitStructure);
+	GPIO_PinAFConfig(GPIO_PORT_USART3_RX, GPIO_AFPIN_USART3_RX, GPIO_AF_USART3);
+
+}
 
 static void clear_RX_DMA_flags()
 {
@@ -101,7 +96,50 @@ static void clear_TX_DMA_flags()
     DMA_ClearFlag(DMA1_Stream3, DMA_FLAG_FEIF4);
 }
 
+
 void init_USART3()
+{
+    activeRxBuff_USART3_pui8 = rxBuff0_USART3_aui8;
+
+    // 1) enable clocks
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
+
+    USART_Cmd(USART3, DISABLE);
+
+    // optional step for oversampling
+    USART_OverSampling8Cmd(USART3, ENABLE);
+
+    // 2) GPIO clocks are enabled in gpio.c
+
+    // 3) configure GPIOs
+    init_GPIO_USART3();
+    
+    // 4) program USART
+    USART_InitTypeDef usartInit;
+    usartInit.USART_BaudRate = 256000;
+    usartInit.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+    usartInit.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+    usartInit.USART_StopBits = USART_StopBits_1;
+    usartInit.USART_WordLength = USART_WordLength_8b;
+    usartInit.USART_Parity = USART_Parity_No;
+    USART_Init(USART3, &usartInit);
+
+    // 5.2) NVIC: dma interrupt   RX
+	NVIC_InitTypeDef NVIC_InitStructure;
+	NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+    
+    USART_ITConfig(USART3, USART_IT_RXNE, ENABLE); //(DMA1_Stream1, DMA_IT_TC, ENABLE); // transfer complete
+
+    // 7) Enable USART
+    USART_Cmd(USART3, ENABLE);
+
+}
+
+void init_USART3_w_DMA()
 {
     // 1) enable clocks
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
@@ -211,6 +249,22 @@ void init_USART3()
 uint8_t try_send_data_USART3(uint8_t * data, uint32_t NBytes)
 {
     /* without DMA */
+    uint32_t i;
+    for(i = 0; i < NBytes; i++)
+    {
+        while(SET != USART_GetFlagStatus(USART3, USART_FLAG_TXE))
+        {
+            // waitUs(100);
+        }
+        USART_SendData(USART3, (uint16_t)data[i]);        
+    }
+    
+    return 1;
+}
+
+uint8_t try_send_data_USART3_DMA(uint8_t * data, uint32_t NBytes)
+{
+    /* without DMA */
     // uint32_t i;
     // for(i = 0; i < NBytes; i++)
     // {
@@ -282,7 +336,7 @@ uint8_t try_send_data_USART3(uint8_t * data, uint32_t NBytes)
 //     uint16_t i, j;
 //     uint16_t dataTmp;
 //     uint8_t * pt;
-//     for(i = 0; i < N_DATA_VALS_USART3; i++)
+//     for(i = 0; i < N_DATA_VALS_TX_USART3; i++)
 // 	{
 //         pt = (uint8_t*)(&txBuff_USART3_aui8[i]);
 //         for(j = 0; j < 4; j++)
@@ -299,58 +353,104 @@ uint8_t try_send_data_USART3(uint8_t * data, uint32_t NBytes)
 //     send_USART3_wrapper('T');
 // }
 
+uint32_t usart3_NbytesRcv = 0;
+
 void read_USART3()
 {
-    if(activeRxBuff_USART3_pui8 == NULL) /* initialization; TODO: move at better place */
-    {
-        activeRxBuff_USART3_pui8 = rxBuff0_USART3_aui8;
-        inactiveRxBuff_USART3_pui8 = rxBuff1_USART3_aui8;
-    }
+    // while(USART_GetFlagStatus(USART3, USART_FLAG_RXNE))
+    // {
+    //     USART_SendData(USART3, USART_ReceiveData(USART3));
+    // }
+    // return;
 
-    PAUSE_USART3_RX_DMA;
-    const uint32_t nrValsRcv = N_DATA_VALS_DMA_USART3_MEM - DMA_GetCurrDataCounter(DMA1_Stream1); /* Note: Calculation this way because DMA data counter counts backwards */
-    nrBytesRcvTotal += nrValsRcv;
-    if(0 < nrValsRcv)
+    if(usart3_NbytesRcv >= N_DATA_VALS_DMA_USART3_MEM)
     {
-        memcpy(activeRxBuff_USART3_pui8, rxDmaBuff_USART3_aui8, nrValsRcv);
+        process_received_data((char*)&activeRxBuff_USART3_pui8[0], N_DATA_VALS_DMA_USART3_MEM);
+        usart3_NbytesRcv = 0;
     }
-    resetCounter_USART3_RX_DMA;
-    clear_RX_DMA_flags();
-    ENABLE_USART3_RX_DMA;
+}
+
+
+// void read_USART3()
+// {
+//     if(activeRxBuff_USART3_pui8 == NULL) /* initialization; TODO: move at better place */
+//     {
+//         activeRxBuff_USART3_pui8 = rxBuff0_USART3_aui8;
+//         inactiveRxBuff_USART3_pui8 = rxBuff1_USART3_aui8;
+//     }
+
+//     PAUSE_USART3_RX_DMA;
+//     const uint32_t nrValsRcv = N_DATA_VALS_DMA_USART3_MEM - DMA_GetCurrDataCounter(DMA1_Stream1); /* Note: Calculation this way because DMA data counter counts backwards */
+//     nrBytesRcvTotal += nrValsRcv;
+//     // if(0 < nrValsRcv)
+//     // {
+//     //     memcpy(activeRxBuff_USART3_pui8, rxDmaBuff_USART3_aui8, nrValsRcv);
+//     // }
     
-	if(0 < nrValsRcv) /* not really needed as long as only called in e.g. RX DMA ISR */
-    {
+//     if(nrValsRcv >= N_DATA_VALS_DMA_USART3_MEM)
+//     {
+//         process_received_data(rxDmaBuff_USART3_aui8, N_DATA_VALS_DMA_USART3_MEM);        
+//         resetCounter_USART3_RX_DMA;
+//     }
 
-        // Loopback:
-        // try_send_data_USART3((uint8_t*)&activeRxBuff_USART3_pui8[0], nrValsRcv);
-        // return;
+//     clear_RX_DMA_flags();
+//     ENABLE_USART3_RX_DMA;
+        
+//     resetCounter_USART3_RX_DMA;
 
-        /* Loop through received data */
-        uint32_t sidx = 0;
-        uint32_t eidx = 0;
-        for(eidx = 0; eidx < nrValsRcv; )
-        {
-            if(activeRxBuff_USART3_pui8[eidx] == '\0')
-            {
-                process_received_data((char*)&activeRxBuff_USART3_pui8[sidx], eidx - sidx + 1);
-                sidx = eidx+1;
-                eidx = sidx;
-            }
-            else
-            {
-                eidx++;
-            }
-        }
-        const uint32_t nrValsRemaining = eidx - sidx;
+//     if(nrValsRcv > 0)
+//     {
+//         resetCounter_USART3_RX_DMA;
+//         clear_RX_DMA_flags();
+//     }
+    
+//     return;
+    
+// 	if(0 < nrValsRcv) /* not really needed as long as only called in e.g. RX DMA ISR */
+//     {
 
-        /* Copy remaining values from active buffer to inactive buffer before switching buffers */
-        memcpy(inactiveRxBuff_USART3_pui8, &activeRxBuff_USART3_pui8[eidx], nrValsRemaining);
+//         // Loopback:
+//         // try_send_data_USART3((uint8_t*)&activeRxBuff_USART3_pui8[0], nrValsRcv);
+//         // return;
 
-        /* Switch buffer */
-        uint8_t * tmpRxBuff_pui8 = activeRxBuff_USART3_pui8;
-        activeRxBuff_USART3_pui8 = inactiveRxBuff_USART3_pui8;
-        inactiveRxBuff_USART3_pui8 = tmpRxBuff_pui8;
-    }
+//         /* Loop through received data */
+//         uint32_t sidx = 0;
+//         uint32_t eidx = 0;
+//         for(eidx = 0; eidx < nrValsRcv; )
+//         {
+//             if(activeRxBuff_USART3_pui8[eidx] == '\0')
+//             {
+//                 process_received_data((char*)&activeRxBuff_USART3_pui8[sidx], eidx - sidx + 1);
+//                 sidx = eidx+1;
+//                 eidx = sidx;
+//             }
+//             else
+//             {
+//                 eidx++;
+//             }
+//         }
+//         const uint32_t nrValsRemaining = eidx - sidx;
+
+//         /* Copy remaining values from active buffer to inactive buffer before switching buffers */
+//         memcpy(inactiveRxBuff_USART3_pui8, &activeRxBuff_USART3_pui8[eidx], nrValsRemaining);
+
+//         /* Switch buffer */
+//         uint8_t * tmpRxBuff_pui8 = activeRxBuff_USART3_pui8;
+//         activeRxBuff_USART3_pui8 = inactiveRxBuff_USART3_pui8;
+//         inactiveRxBuff_USART3_pui8 = tmpRxBuff_pui8;
+//     }
+// }
+
+
+void USART3_IRQHandler()
+{
+    // waitUs(100);
+    // while(USART_GetFlagStatus(USART3, USART_FLAG_RXNE))
+    // {
+        activeRxBuff_USART3_pui8[usart3_NbytesRcv] = (uint8_t)USART_ReceiveData(USART3);
+        usart3_NbytesRcv++;
+    // }
+    USART_ClearITPendingBit(USART3, USART_IT_RXNE);
 }
 
 void DMA1_Stream1_IRQHandler()

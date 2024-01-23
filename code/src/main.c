@@ -115,12 +115,17 @@ int main(void)
 		// disp_fvar("Time passed in us: ", (float)timPassedInUs, 5);
 		// disp_fvar("Time passed max in us: ", (float)timPassedMaxInUs, 7);
 #elif (defined STM32F40_41xxx) 
-		// Toggle green LED
-		GPIO_SetBits(GPIOD, GPIO_Pin_12);
-		waitMs(1);
-		waitUs(10);
-		GPIO_ResetBits(GPIOD, GPIO_Pin_12);
-		waitMs(1);
+		// float timePassedInUs, timePassedMaxInUs;
+		// startTimeMeas(); // log timestamp at start			
+		// GPIO_SetBits(GPIOD, GPIO_Pin_13);
+		// waitUs(333);
+		// GPIO_ResetBits(GPIOD, GPIO_Pin_13);
+		// stopTimeMeas(&timePassedInUs, &timePassedMaxInUs); // log time directly after end of function
+			
+		// GPIO_SetBits(GPIOD, GPIO_Pin_12);
+		// waitMs(50);
+		// GPIO_ResetBits(GPIOD, GPIO_Pin_12);
+		// waitMs(50);
 
 		read_USART3();
 		// uint8_t data = 1;
